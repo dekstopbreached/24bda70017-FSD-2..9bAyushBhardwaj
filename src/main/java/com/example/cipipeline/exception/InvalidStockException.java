@@ -5,3 +5,4 @@ public class InvalidStockException extends RuntimeException {
         super(message);
     }
 }
+

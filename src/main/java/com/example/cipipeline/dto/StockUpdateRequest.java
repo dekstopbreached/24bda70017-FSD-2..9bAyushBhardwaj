@@ -22,3 +22,4 @@ public class StockUpdateRequest {
         this.quantityChange = quantityChange;
     }
 }
+

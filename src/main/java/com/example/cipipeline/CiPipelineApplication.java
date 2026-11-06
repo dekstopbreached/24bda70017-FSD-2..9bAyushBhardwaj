@@ -10,3 +10,4 @@ public class CiPipelineApplication {
         SpringApplication.run(CiPipelineApplication.class, args);
     }
 }
+

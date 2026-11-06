@@ -61,3 +61,4 @@ public class ProductResponse {
         this.stock = stock;
     }
 }
+

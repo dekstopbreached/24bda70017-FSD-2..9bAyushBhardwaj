@@ -96,3 +96,4 @@ public class Product {
         return Objects.hash(id, name, category, price, stock);
     }
 }
+

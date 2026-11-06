@@ -58,3 +58,4 @@ class ProductProviderVerificationTest {
         when(productService.getProductById(1L)).thenReturn(response);
     }
 }
+

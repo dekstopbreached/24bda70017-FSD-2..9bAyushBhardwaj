@@ -90,3 +90,4 @@ class ProductRepositoryIntegrationTest {
         assertFalse(productRepository.findById(product.getId()).isPresent());
     }
 }
+
