@@ -1,0 +1,80 @@
+name: Continuous Integration Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    name: Build & Multi-Tier Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 1. Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: 2. Set up JDK 17 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: 3. Verify Docker Daemon for Testcontainers
+        run: |
+          docker --version
+          docker info
+
+      - name: 4. Grant Execute Permissions to Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: 5. Compile Application Sources
+        run: ./mvnw clean compile -B
+
+      - name: 6. Execute Unit Tests (JUnit 5 + Mockito)
+        run: ./mvnw test -Dtest=*UnitTest -B
+
+      - name: 7. Execute Web API Layer Tests (MockMvc)
+        run: ./mvnw test -Dtest=*WebMvcTest -B
+
+      - name: 8. Execute Contract Tests (Pact Consumer & Provider)
+        run: ./mvnw test -Dtest=*ContractTest,*VerificationTest -B
+
+      - name: 9. Execute Infrastructure Integration Tests (Testcontainers + PostgreSQL)
+        run: ./mvnw test -Dtest=*IntegrationTest -B
+
+      - name: 10. Package Executable Application JAR
+        run: ./mvnw package -DskipTests=true -B
+
+      - name: 11. Archive Test Results (Surefire Reports)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-test-reports
+          path: target/surefire-reports/
+          retention-days: 7
+
+      - name: 12. Archive Generated Pact Contract Specifications
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pact-contracts
+          path: target/pacts/
+          retention-days: 14
+
+      - name: 13. Archive Packaged Executable JAR Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+          retention-days: 7
